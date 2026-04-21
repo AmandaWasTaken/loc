@@ -2,35 +2,37 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-typedef unsigned int u32;
+#include "../include/extensions.h"
+
+typedef unsigned int  u32;
+typedef unsigned char u8;
+
 #define GREEN 			"\e[0;32m"
 #define RED 			"\e[0;31m"
 #define DEFAULT_COLOR 	"\e[0m"
 
-// TODO more of these 
-const char* const valid_files[] = {
-	".txt",
-	// source files
-	".c",
-	".java",
-	".rs",
-	".js",
-	".ts",
-	".jsx",
-	".sh",
-	// config files etc
-	".conf",
-	".json",
-};
 
-const size_t n_extensions = sizeof(valid_files)/sizeof(valid_files[0]);
+int longest_string(int argc, char** args){
+
+	int res = 0;
+	for(size_t i = 0; i < argc; i++){
+		if(strlen(args[i]) > res) res = strlen(args[i]); 
+	}
+	return res;
+}
 
 void print_valid_files(void){
 	printf("Allowed file extensions:\n");
+	
+	const int padding = longest_string(n_extensions, (char**)&valid_files);
+
 	for(size_t i = 0; i < n_extensions; i++){
-		printf("%s\n", valid_files[i]);
+		if(i % 5 == 0) printf("\n");
+		printf("%-*s | ", padding, valid_files[i]);
 	}
+	printf("\n\n");
 }
 
 void usage(const char* s){
@@ -69,15 +71,15 @@ u32 process_file(char* filename){
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read = 0;
+	bool ml_comment_mode = false;
 	
-
 	if(f == NULL) {
 		fprintf(stderr, "%s%s: No such file!%s\n", RED, filename, DEFAULT_COLOR);
 		return 0;
 	}
 
 	if(!valid_file(filename)){
-			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n\n", 
+			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
 					RED, get_ext(filename), DEFAULT_COLOR);
 			return 0;
 	}
@@ -87,23 +89,23 @@ u32 process_file(char* filename){
 		if((read == 0) || (read == 1 && line[0] == '\n')) continue;
 
 		// Skip commented lines
-		// TODO this obviously mishandles inline comments 
-		// also multiline comments are not handled at all
-		if(strstr(line, "//") != NULL) continue;
+		char* p = line;
+		while(*p && isspace((u8) *p)){ p++; }
+		if(!ml_comment_mode && p[0] == '/' && p[1] == '/') continue;
+		
+		if(!ml_comment_mode && p[0] == '/' && p[1] == '*'){
+			ml_comment_mode = true;
+		}
+
+		if(ml_comment_mode){
+			if(strstr(p, "*/") != NULL) ml_comment_mode = false;
+			continue;
+		}
 		res++;
 	} 
 
 	fclose(f);
 	if(line) free(line);
-	return res;
-}
-
-int longest_string(int argc, char** args){
-
-	int res = 0;
-	for(size_t i = 0; i < argc; i++){
-		if(strlen(args[i]) > res) res = strlen(args[i]); 
-	}
 	return res;
 }
 

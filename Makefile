@@ -9,6 +9,9 @@ main: $(SRC)
 dev: $(SRC)
 	gcc -o $(EXE) $(SRC) $(FLAGS)
 
+install: $(EXE)
+	sudo cp $(EXE) /usr/bin
+
 clean: $(EXE)
 	rm $(EXE)
 
