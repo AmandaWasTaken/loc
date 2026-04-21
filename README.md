@@ -3,12 +3,10 @@ A simple lightweight tool to count lines in a file or multiple files, excluding 
 ---
 # Build  
 With make:
-    Normal build: `make`
-    Dev build:    `make dev`
-    Full:         `make install` 
+    Normal build: `make`  
+    Dev build: `make dev`  
+    Full: `make install`   
 
-    `install` copies the executable to /usr/bin on *nix environments for ease of use
-    
 Without make:
     `cc -o loc src/*.c`
 
