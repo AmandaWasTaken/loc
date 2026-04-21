@@ -2,7 +2,7 @@ A simple lightweight tool to count lines in a file or multiple files, excluding 
 
 ---
 # Build  
-With make:
+With make:  
     Normal build: `make`  
     Dev build: `make dev`  
     Full: `make install`   
