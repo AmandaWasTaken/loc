@@ -5,72 +5,61 @@
 // or alternatively sort them before printing
 
 const char* const valid_files[] = {
-	/* General text/doc files */
-	".txt",
-	".md",
-	".tex",
-	".log",
-	".csv",
-	".tsv",
-
-	/* source files */
+	".bat",
 	".c",
-	".java",
-	".rs",
-	".js",
-	".ts",
-	".jsx",
-	".sh",
-
-	/* Web/FE files */
-	".html",
-	".htm",
+	".cc",
+	".cmd",
+	".conf",
+	".cpp",
 	".css",
-	".php",
-	".scss",
-	".sass",
-	".less",
-
-	/* Scripts etc */
-	".py",
-	".rb",
+	".csv",
+	".cxx",
+	".dockerfile",
+	".env",
+	".gitignore",
 	".go",
-	".swift",
+	".h",
+	".hh",
+	".hpp",
+	".htm",
+	".html",
+	".ini",
+	".java",
+	".js",
+	".json",
+	".jsx",
 	".kt",
 	".kts",
-	".scala",
-	".pl",
+	".less",
+	".lock",
+	".log",
 	".lua",
+	".makefile",
+	".md",
+	".php",
+	".pl",
+	".properties",
 	".ps1",
-	".bat",
-	".cmd",
-
-	/* Config files and such */
-	".conf",
-	".json",
+	".py",
+	".rb",
+	".rs",
+	".sass",
+	".scala",
+	".scss",
+	".sh",
+	".swift",
+	".tex",
+	".toml",
+	".ts",
+	".tsv",
+	".txt",
+	".xml",
 	".yaml",
 	".yml",
-	".toml",
-	".env",
-	".properties",
-	".ini",
-	".xml",
-
-	/* C(++) headers */
-	".h",
-	".hpp",
-	".hh",
-	".cpp",
-	".cc",
-	".cxx",
-
-	/* Misc */
-	".dockerfile",
-	".makefile",
-	".gitignore",
-	".lock",
 };
 
 const size_t n_extensions = sizeof(valid_files)/sizeof(valid_files[0]);
 
 #endif
+
+

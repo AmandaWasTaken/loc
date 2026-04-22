@@ -24,14 +24,21 @@ int longest_string(int argc, char** args){
 }
 
 void print_valid_files(void){
+
 	printf("Allowed file extensions:\n");
 	
 	const int padding = longest_string(n_extensions, (char**)&valid_files);
+	const size_t cols = 5;
+	const size_t rows = (n_extensions + cols - 1)/cols;
 
-	for(size_t i = 0; i < n_extensions; i++){
-		if(i % 5 == 0) printf("\n");
-		printf("%-*s | ", padding, valid_files[i]);
+	for(size_t row = 0; row < rows; row++){
+		printf("\n");
+		for(size_t col = 0; col < cols; col++){
+			size_t idx = col * rows + row;
+			if(idx < n_extensions) printf("%-*s | ", padding, valid_files[idx]);
+		}
 	}
+
 	printf("\n\n");
 }
 

@@ -1,7 +1,11 @@
-A simple lightweight tool to count lines in a file or multiple files, excluding blank lines, //comments and /* multi-line comment blocks */
+A simple lightweight tool to count lines in a file or multiple files, excluding blank lines, //comments and /* multi-line comment blocks */  
 
 ---
-# Build  
+## Dependencies  
+`GNU make` (optional)  
+
+---
+## Build  
 With make:  
     Normal build: `make`  
     Dev build: `make dev`  
@@ -17,4 +21,6 @@ Some essential features are still missing
 
 ---
 ## Known issues  
-Comments starting with `#` are treated as normal lines instead of comments in favor of C(++) preprocessor directives and macros over comments in languages like Python. 
+- Comments starting with `#` are treated as normal lines instead of comments in favor of C(++) preprocessor directives and macros over comments in languages like Python.  
+
+- Valid files with no extension (eg. shell scripts) are not handled properly, since the program only looks at the extension itself.  

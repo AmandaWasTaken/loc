@@ -2,16 +2,17 @@ SRC=./src/*.c
 LIB=./include/*.h
 FLAGS=-Wall -Wextra -Wpedantic
 EXE=loc
+BIN_DIR=./bin
 
 main: $(SRC)
-	gcc -o $(EXE) $(SRC)
+	gcc -o $(BIN_DIR)/$(EXE) $(SRC)
 
 dev: $(SRC)
-	gcc -o $(EXE) $(SRC) $(FLAGS)
+	gcc -o $(BIN_DIR)/$(EXE) $(SRC) $(FLAGS)
 
 install: $(EXE)
-	sudo cp $(EXE) /usr/bin
+	sudo cp $(BIN_DIR)/$(EXE) /usr/bin
 
-clean: $(EXE)
-	rm $(EXE)
+clean: $(BIN_DIR)/$(EXE)
+	rm $(BIN_DIR)/$(EXE)
 
