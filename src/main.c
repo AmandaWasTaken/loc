@@ -23,6 +23,7 @@ int longest_string(int argc, char** args){
 	return res;
 }
 
+
 void print_valid_files(void){
 
 	printf("Allowed file extensions:\n");
@@ -30,6 +31,8 @@ void print_valid_files(void){
 	const int padding = longest_string(n_extensions, (char**)&valid_files);
 	const size_t cols = 5;
 	const size_t rows = (n_extensions + cols - 1)/cols;
+
+	sort_extensions(valid_files, n_extensions);
 
 	for(size_t row = 0; row < rows; row++){
 		printf("\n");

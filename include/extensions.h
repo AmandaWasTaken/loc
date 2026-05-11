@@ -1,10 +1,10 @@
 #ifndef EXTENSIONS_H
 #define EXTENSIONS_H
 
-// TODO more sensible ordering for cleaner output
-// or alternatively sort them before printing
+int sort_extensions(const char** exts, size_t n_extensions);
 
-const char* const valid_files[] = {
+// mucho texto
+static const char* valid_files[] = {
 	".bat",
 	".c",
 	".cc",
