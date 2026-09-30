@@ -21,6 +21,5 @@ Some essential features are still missing
 
 ---
 ## Known issues  
-- Comments starting with `#` are treated as normal lines instead of comments in favor of C(++) preprocessor directives and macros over comments in languages like Python.  
 
 - Valid files with no extension (eg. shell scripts) are not handled properly, since the program only looks at the extension itself.  
