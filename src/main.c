@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,6 +10,8 @@
 
 typedef unsigned int  u32;
 typedef unsigned char u8;
+
+static bool quiet_mode = false;
 
 #define GREEN 			"\e[0;32m"
 #define RED 			"\e[0;31m"
@@ -23,7 +26,6 @@ static int longest_string(int argc, char** args){
 	}
 	return res;
 }
-
 
 static void print_valid_files(void){
 
@@ -48,9 +50,18 @@ static void print_valid_files(void){
 
 static void usage(const char* s){
 
-	printf("Usage: %s <file(s)>\n\n", s);
+	printf("Usage: %s [OPTIONS] <file(s)>\n\n", s);
 	print_valid_files();
 	exit(1);
+}
+
+static void help(void){
+	
+	printf("Options:\n\t "
+		   "-q\t\tQuiet mode; Do not output individual file names\n"
+		   "\t -h\t\tDisplay this message and exit\n"
+		   "\t [-u|nothing]\tDisplay usage details and exit\n");
+	exit(0);
 }
 
 static char* get_ext(const char* str){
@@ -105,7 +116,7 @@ static void process_file(File_Context* ctx){
 		return;
 	}
 
-	if(!valid_file(ctx->filename)){
+	if(!valid_file(ctx->filename) && !quiet_mode){
 			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
 					RED, extension, DEFAULT_COLOR);
 			return;
@@ -165,6 +176,7 @@ static void process_file(File_Context* ctx){
 
 	fclose(f);
 	if(line) free(line);
+	return;
 }
 
 static u32 count_locs_total(int argc, char** args){
@@ -180,11 +192,15 @@ static u32 count_locs_total(int argc, char** args){
 		set_comment_prefix(&ctx);
 		process_file(&ctx);
 		
-		if(ctx.lines > 0)
-			printf("%-*s:  Lines: %s%5u%s "
+		if(ctx.lines > 0){
+			if(!quiet_mode){
+				printf("%-*s:  Lines: %s%5u%s "
 					"| Comments: %s%u%s\n", 
 					max_width, ctx.filename, GREEN, ctx.lines, DEFAULT_COLOR,
 					RED, ctx.comment_lines, DEFAULT_COLOR);
+				}
+			}
+
 		res += ctx.lines;
 		res += ctx.comment_lines;
 		ctx.lines = 0;
@@ -196,12 +212,31 @@ static u32 count_locs_total(int argc, char** args){
 
 int main(int argc, char** argv){
 
-	if(argc < 2){
+	int opt;
+	const char* opts = "hqu";
+
+	while((opt = getopt(argc, argv, opts)) != -1){
+		switch(opt){
+			case 'u':
+			default:
+				usage(argv[0]);
+				break;
+			case 'q':
+				quiet_mode = true;
+				break;
+			case 'h':
+				help();
+		}
+	}
+	
+	int file_count = argc - optind;
+	char** files = &argv[optind];
+	if(file_count == 0){
 		usage(argv[0]);
 	}
 
 	// increment argv before passing to skip argv[0]
-	u32 lines = count_locs_total(argc - 1, ++argv);
+	u32 lines = count_locs_total(file_count, files);
 	if(lines <= 0){
 		printf("No text found in given file(s)\n");
 		return 0;
@@ -209,14 +244,11 @@ int main(int argc, char** argv){
 
 	int invalid_files = 0;
 	int total_files = 0;
-	printf("\n%sFiles:%s\n", RED, DEFAULT_COLOR);
-	for(int i = 0; i < argc - 1; i++){
-		if(!valid_file(argv[i])){
+
+	for(int i = 0; i < file_count; i++){
+		if(!valid_file(files[i])){
 			invalid_files++;
-		} //
-		  //
-
-
+		}
 		total_files++;
 	}
 	printf("\n");
