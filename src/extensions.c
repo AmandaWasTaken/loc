@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+// Comment
+
 int _compare(const void* a, const void* b){
 	
 	const char* const *sa = a;

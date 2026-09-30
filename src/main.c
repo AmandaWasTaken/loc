@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "../include/filecontext.h"
 #include "../include/extensions.h"
 
 typedef unsigned int  u32;
@@ -14,7 +15,7 @@ typedef unsigned char u8;
 #define DEFAULT_COLOR 	"\e[0m"
 
 
-int longest_string(int argc, char** args){
+static int longest_string(int argc, char** args){
 
 	int res = 0;
 	for(size_t i = 0; i < argc; i++){
@@ -24,7 +25,7 @@ int longest_string(int argc, char** args){
 }
 
 
-void print_valid_files(void){
+static void print_valid_files(void){
 
 	printf("Allowed file extensions:\n");
 	
@@ -45,14 +46,14 @@ void print_valid_files(void){
 	printf("\n\n");
 }
 
-void usage(const char* s){
+static void usage(const char* s){
 
 	printf("Usage: %s <file(s)>\n\n", s);
 	print_valid_files();
 	exit(1);
 }
 
-char* get_ext(const char* str){
+static char* get_ext(const char* str){
 	
 	if(strstr(str, ".") != NULL)
 		return strrchr(str, '.');
@@ -63,7 +64,11 @@ char* get_ext(const char* str){
 	return "\"none\"";
 }
 
-bool valid_file(char* filename){
+static void set_file_extension(File_Context* ctx){
+	ctx->extension = get_ext(ctx->filename);
+}
+
+static bool valid_file(const char* filename){
 	
 	char* ext = get_ext(filename); 
 	
@@ -74,24 +79,37 @@ bool valid_file(char* filename){
 	return false;
 }
 
-u32 process_file(char* filename){
+static void set_comment_prefix(File_Context* ctx){
 
-	u32 res = 0;
-	FILE* f = fopen(filename, "r");
+	if(strcmp(ctx->extension, ".py") == 0 || 
+	   strcmp(ctx->extension, ".sh") == 0 ||
+	   strcmp(ctx->extension, ".rb") == 0) {
+		ctx->prefix = CMT_POUND; 
+	} else {
+		ctx->prefix = CMT_SLASH;
+	}
+	return;
+}
+
+static void process_file(File_Context* ctx){
+
+	FILE* f = fopen(ctx->filename, "r");
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read = 0;
 	bool ml_comment_mode = false;
+	const char* extension = get_ext(ctx->filename);
 	
 	if(f == NULL) {
-		fprintf(stderr, "%s%s: No such file!%s\n", RED, filename, DEFAULT_COLOR);
-		return 0;
+		fprintf(stderr, "%s%s: No such file!%s\n", RED, ctx->filename, DEFAULT_COLOR);
+		return;
 	}
 
-	if(!valid_file(filename)){
+
+	if(!valid_file(ctx->filename)){
 			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
-					RED, get_ext(filename), DEFAULT_COLOR);
-			return 0;
+					RED, extension, DEFAULT_COLOR);
+			return;
 	}
 
 	while((read = getline(&line, &len, f)) != -1){
@@ -101,36 +119,62 @@ u32 process_file(char* filename){
 		// Skip commented lines
 		char* p = line;
 		while(*p && isspace((u8) *p)){ p++; }
-		if(!ml_comment_mode && p[0] == '/' && p[1] == '/') continue;
-		
-		if(!ml_comment_mode && p[0] == '/' && p[1] == '*'){
-			ml_comment_mode = true;
-		}
 
-		if(ml_comment_mode){
-			if(strstr(p, "*/") != NULL) ml_comment_mode = false;
-			continue;
-		}
-		res++;
-	} 
+		//printf(ctx->prefix == 0 ? "slash\n" : "pound\n");
+		switch(ctx->prefix){
+			case CMT_SLASH:
+				if(!ml_comment_mode && p[0] == '/' && p[1] == '/'){
+					ctx->comment_lines++;
+					continue;
+				}
+				
+				if(!ml_comment_mode && p[0] == '/' && p[1] == '*'){
+					ml_comment_mode = true;
+				}
+
+				if(ml_comment_mode){
+					if(strstr(p, "*/") != NULL){
+						ml_comment_mode = false;
+					}
+					ctx->comment_lines++;
+					continue;
+				}
+				break; // case CMT_SLASH
+
+			case CMT_POUND:
+				if(p[0] == '#'){
+					ctx->comment_lines++;
+					continue;
+				}
+				break; // case CMT_POUND
+			}
+		ctx->lines++;
+		} 
 
 	fclose(f);
 	if(line) free(line);
-	return res;
 }
 
-u32 count_locs_total(int argc, char** args){
+static u32 count_locs_total(int argc, char** args){
 
 	u32 res = 0;
 	const int max_width = longest_string(argc, args);
 
-	printf("Lines per file %s(excluding blank lines):%s\n", GREEN, DEFAULT_COLOR);
+	File_Context ctx = { 0 };
 
 	for(int i = 0; i < argc; i++){
-		u32 lines = process_file(args[i]);
-		if(lines > 0)
-			printf("%-*s:  %5u\n", max_width, args[i], lines);
-		res += lines;
+		ctx.filename = args[i];
+		set_file_extension(&ctx);
+		set_comment_prefix(&ctx);
+		process_file(&ctx);
+		
+		if(ctx.lines > 0)
+			printf("%-*s:  Lines: %5u "
+					"| Comments: %u\n", 
+					max_width, ctx.filename, ctx.lines, ctx.comment_lines);
+		res += ctx.lines;
+		ctx.lines = 0;
+		ctx.comment_lines = 0;
 	}
 
 	return res;
@@ -142,7 +186,7 @@ int main(int argc, char** argv){
 		usage(argv[0]);
 	}
 
-	// increment argv before passing to skip filename (argv[0])
+	// increment argv before passing to skip argv[0]
 	u32 lines = count_locs_total(argc - 1, ++argv);
 	if(lines <= 0){
 		printf("No text found in given file(s)\n");
