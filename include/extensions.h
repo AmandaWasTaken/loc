@@ -61,5 +61,3 @@ static const char* valid_files[] = {
 const size_t n_extensions = sizeof(valid_files)/sizeof(valid_files[0]);
 
 #endif
-
-

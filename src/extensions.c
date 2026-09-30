@@ -2,9 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-// Comment
+/*
+ multiline
+ comment
+ */
 
-int _compare(const void* a, const void* b){
+static int _compare(const void* a, const void* b){
 	
 	const char* const *sa = a;
 	const char* const *sb = b;

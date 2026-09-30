@@ -105,7 +105,6 @@ static void process_file(File_Context* ctx){
 		return;
 	}
 
-
 	if(!valid_file(ctx->filename)){
 			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
 					RED, extension, DEFAULT_COLOR);
@@ -120,7 +119,6 @@ static void process_file(File_Context* ctx){
 		char* p = line;
 		while(*p && isspace((u8) *p)){ p++; }
 
-		//printf(ctx->prefix == 0 ? "slash\n" : "pound\n");
 		switch(ctx->prefix){
 			case CMT_SLASH:
 				if(!ml_comment_mode && p[0] == '/' && p[1] == '/'){
@@ -142,10 +140,24 @@ static void process_file(File_Context* ctx){
 				break; // case CMT_SLASH
 
 			case CMT_POUND:
-				if(p[0] == '#'){
+				if(!ml_comment_mode && p[0] == '#'){
 					ctx->comment_lines++;
 					continue;
 				}
+
+				if(!ml_comment_mode && strstr(p, "\'\'\'") != NULL){
+					ml_comment_mode = true;
+					continue;
+				}
+
+				if(ml_comment_mode){
+					if(strstr(p, "\'\'\'") != NULL){
+						ml_comment_mode = false;
+						ctx->comment_lines++;
+					}
+					ctx->comment_lines++;
+					continue;
+				}	
 				break; // case CMT_POUND
 			}
 		ctx->lines++;
@@ -169,10 +181,12 @@ static u32 count_locs_total(int argc, char** args){
 		process_file(&ctx);
 		
 		if(ctx.lines > 0)
-			printf("%-*s:  Lines: %5u "
-					"| Comments: %u\n", 
-					max_width, ctx.filename, ctx.lines, ctx.comment_lines);
+			printf("%-*s:  Lines: %s%5u%s "
+					"| Comments: %s%u%s\n", 
+					max_width, ctx.filename, GREEN, ctx.lines, DEFAULT_COLOR,
+					RED, ctx.comment_lines, DEFAULT_COLOR);
 		res += ctx.lines;
+		res += ctx.comment_lines;
 		ctx.lines = 0;
 		ctx.comment_lines = 0;
 	}
@@ -200,7 +214,7 @@ int main(int argc, char** argv){
 	}
 	putc('\n', stdout);
 
-	printf("Total: %s%u%s\n", GREEN, lines, DEFAULT_COLOR);
+	printf("Total (including comments): %s%u%s\n", GREEN, lines, DEFAULT_COLOR);
 	
     return 0;
 }

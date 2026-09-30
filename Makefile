@@ -10,7 +10,7 @@ main: $(SRC)
 dev: $(SRC)
 	gcc -o $(BIN_DIR)/$(EXE) $(SRC) $(FLAGS)
 
-install: $(EXE)
+install: $(BIN_DIR)/$(EXE)
 	sudo cp $(BIN_DIR)/$(EXE) /usr/bin
 
 clean: $(BIN_DIR)/$(EXE)
