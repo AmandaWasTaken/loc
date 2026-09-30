@@ -207,14 +207,23 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
+	int invalid_files = 0;
+	int total_files = 0;
 	printf("\n%sFiles:%s\n", RED, DEFAULT_COLOR);
 	for(int i = 0; i < argc - 1; i++){
-		if(!valid_file(argv[i])) printf("%s(INVALID)%s ", RED, DEFAULT_COLOR);
-		printf("%s\n", argv[i]);
-	}
-	putc('\n', stdout);
+		if(!valid_file(argv[i])){
+			invalid_files++;
+		} //
+		  //
 
-	printf("Total (including comments): %s%u%s\n", GREEN, lines, DEFAULT_COLOR);
+
+		total_files++;
+	}
+	printf("\n");
+	printf("Files: %s%i%s (%s%i%s invalid)\n", GREEN, total_files, DEFAULT_COLOR,
+			RED, invalid_files, DEFAULT_COLOR);
+
+	printf("Lines (including comments): %s%u%s\n", GREEN, lines, DEFAULT_COLOR);
 	
     return 0;
 }
