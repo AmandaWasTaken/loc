@@ -1,4 +1,4 @@
-A simple lightweight tool to count lines in a file or multiple files, excluding blank lines, //comments and /* multi-line comment blocks */  
+A simple lightweight tool to count lines in a file or multiple files. Counts and outputs commented lines separately with support for  ``// Comments, /* Comments */ and # Comments``
 
 ---
 ## Dependencies  
