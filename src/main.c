@@ -102,7 +102,7 @@ static void set_comment_prefix(File_Context* ctx){
 	return;
 }
 
-static void process_file(File_Context* ctx){
+static bool process_file(File_Context* ctx){
 
 	FILE* f = fopen(ctx->filename, "r");
 	char* line = NULL;
@@ -113,13 +113,11 @@ static void process_file(File_Context* ctx){
 	
 	if(f == NULL) {
 		fprintf(stderr, "%s%s: No such file!%s\n", RED, ctx->filename, DEFAULT_COLOR);
-		return;
+		return false;
 	}
 
-	if(!valid_file(ctx->filename) && !quiet_mode){
-			fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
-					RED, extension, DEFAULT_COLOR);
-			return;
+	if(!valid_file(ctx->filename)){
+		return false;
 	}
 
 	while((read = getline(&line, &len, f)) != -1){
@@ -176,13 +174,14 @@ static void process_file(File_Context* ctx){
 
 	fclose(f);
 	if(line) free(line);
-	return;
+	return true;
 }
 
-static u32 count_locs_total(int argc, char** args){
+static u32 count_locs_total(int argc, char** args, int* invalid_files){
 
 	u32 res = 0;
 	const int max_width = longest_string(argc, args);
+	*invalid_files = 0;
 
 	File_Context ctx = { 0 };
 
@@ -190,7 +189,15 @@ static u32 count_locs_total(int argc, char** args){
 		ctx.filename = args[i];
 		set_file_extension(&ctx);
 		set_comment_prefix(&ctx);
-		process_file(&ctx);
+
+		if(!process_file(&ctx)){
+			(*invalid_files)++;
+			if(!quiet_mode){
+				fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
+					RED, ctx.extension, DEFAULT_COLOR);
+			}
+			continue;
+		}
 		
 		if(ctx.lines > 0){
 			if(!quiet_mode){
@@ -229,30 +236,22 @@ int main(int argc, char** argv){
 		}
 	}
 	
+	int invalid_files = 0;
 	int file_count = argc - optind;
 	char** files = &argv[optind];
 	if(file_count == 0){
 		usage(argv[0]);
 	}
 
-	// increment argv before passing to skip argv[0]
-	u32 lines = count_locs_total(file_count, files);
+	u32 lines = count_locs_total(file_count, files, &invalid_files);
 	if(lines <= 0){
 		printf("No text found in given file(s)\n");
 		return 0;
 	}
 
-	int invalid_files = 0;
-	int total_files = 0;
 
-	for(int i = 0; i < file_count; i++){
-		if(!valid_file(files[i])){
-			invalid_files++;
-		}
-		total_files++;
-	}
 	printf("\n");
-	printf("Files: %s%i%s (%s%i%s invalid)\n", GREEN, total_files, DEFAULT_COLOR,
+	printf("Files: %s%i%s (%s%i%s invalid)\n", GREEN, file_count, DEFAULT_COLOR,
 			RED, invalid_files, DEFAULT_COLOR);
 
 	printf("Lines (including comments): %s%u%s\n", GREEN, lines, DEFAULT_COLOR);
