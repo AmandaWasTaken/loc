@@ -12,7 +12,7 @@
 typedef uint_fast32_t u32;
 typedef uint_fast8_t  u8;
 
-static bool quiet_mode = false;
+static bool verbose_mode = false;
 
 #define GREEN 			"\e[0;32m"
 #define RED 			"\e[0;31m"
@@ -51,7 +51,7 @@ static void print_valid_files(void){
 
 static void usage(const char* s){
 
-	printf("Usage: %s [OPTIONS] <file(s)>\n\n", s);
+	printf("Usage: %s [-hvu] <file(s)>\n\n", s);
 	print_valid_files();
 	exit(1);
 }
@@ -59,7 +59,8 @@ static void usage(const char* s){
 static void help(void){
 	
 	printf("Options:\n\t "
-		   "-q\t\tQuiet mode; Do not output individual file names\n"
+		   "-v\t\tVerbose mode; "
+		   "Output the name of each processed file\n"
 		   "\t -h\t\tDisplay this message and exit\n"
 		   "\t [-u|nothing]\tDisplay usage details and exit\n");
 	exit(0);
@@ -193,7 +194,7 @@ static u32 count_locs_total(int argc, char** args, int* invalid_files){
 
 		if(!process_file(&ctx)){
 			(*invalid_files)++;
-			if(!quiet_mode){
+			if(verbose_mode){
 				fprintf(stderr, "Invalid file extension %s%s%s, Skipping. . .\n", 
 					RED, ctx.extension, DEFAULT_COLOR);
 			}
@@ -201,7 +202,7 @@ static u32 count_locs_total(int argc, char** args, int* invalid_files){
 		}
 		
 		if(ctx.lines > 0){
-			if(!quiet_mode){
+			if(verbose_mode){
 				printf("%-*s:  Lines: %s%5u%s "
 					"| Comments: %s%u%s\n", 
 					max_width, ctx.filename, GREEN, ctx.lines, DEFAULT_COLOR,
@@ -221,7 +222,7 @@ static u32 count_locs_total(int argc, char** args, int* invalid_files){
 int main(int argc, char** argv){
 
 	int opt;
-	const char* opts = "hqu";
+	const char* opts = "hvu";
 
 	while((opt = getopt(argc, argv, opts)) != -1){
 		switch(opt){
@@ -229,8 +230,8 @@ int main(int argc, char** argv){
 			default:
 				usage(argv[0]);
 				break;
-			case 'q':
-				quiet_mode = true;
+			case 'v':
+				verbose_mode = true;
 				break;
 			case 'h':
 				help();
@@ -251,7 +252,7 @@ int main(int argc, char** argv){
 	}
 
 
-	if(!quiet_mode) printf("\n");
+	if(verbose_mode) printf("\n");
 	printf("Files: %s%i%s (%s%i%s invalid)\n", GREEN, file_count, DEFAULT_COLOR,
 			RED, invalid_files, DEFAULT_COLOR);
 
