@@ -3,13 +3,14 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <ctype.h>
 
 #include "../include/filecontext.h"
 #include "../include/extensions.h"
 
-typedef unsigned int  u32;
-typedef unsigned char u8;
+typedef uint_fast32_t u32;
+typedef uint_fast8_t  u8;
 
 static bool quiet_mode = false;
 
@@ -250,7 +251,7 @@ int main(int argc, char** argv){
 	}
 
 
-	printf("\n");
+	if(!quiet_mode) printf("\n");
 	printf("Files: %s%i%s (%s%i%s invalid)\n", GREEN, file_count, DEFAULT_COLOR,
 			RED, invalid_files, DEFAULT_COLOR);
 
